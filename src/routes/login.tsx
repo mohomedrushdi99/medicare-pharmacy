@@ -16,8 +16,8 @@ export const Route = createFileRoute("/login")({ component: Login });
 function Login() {
   const { user, isPending } = useCurrentUserState();
   const navigate = useNavigate();
-  const [email, setEmail] = useState(OPERATOR.email);
-  const [password, setPassword] = useState(OPERATOR.password);
+  const [email, setEmail] = useState<string>(OPERATOR.email);
+  const [password, setPassword] = useState<string>(OPERATOR.password);
   const [busy, setBusy] = useState(false);
   const [seeded, setSeeded] = useState(false);
 

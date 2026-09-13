@@ -16,12 +16,17 @@ import { Route as AppBillingRouteImport } from './routes/_app/billing'
 import { Route as AppInventoryRouteImport } from './routes/_app/inventory'
 import { Route as AppInvoicesRouteImport } from './routes/_app/invoices'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
-import { Route as AppInventoryIdRouteImport } from './routes/_app/inventory.$id'
 import { Route as AppInventoryIndexRouteImport } from './routes/_app/inventory.index'
+import { Route as AppInventoryIdRouteImport } from './routes/_app/inventory.$id'
 import { Route as AppInventoryNewRouteImport } from './routes/_app/inventory.new'
-import { Route as AppInvoicesIdRouteImport } from './routes/_app/invoices.$id'
 import { Route as AppInvoicesIndexRouteImport } from './routes/_app/invoices.index'
+import { Route as AppInvoicesIdRouteImport } from './routes/_app/invoices.$id'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiAuthGetSessionRouteImport } from './routes/api/auth/get-session'
+import { Route as ApiAuthOkRouteImport } from './routes/api/auth/ok'
+import { Route as ApiAuthSignOutRouteImport } from './routes/api/auth/sign-out'
+import { Route as ApiAuthSignInEmailRouteImport } from './routes/api/auth/sign-in/email'
+import { Route as ApiAuthSignUpEmailRouteImport } from './routes/api/auth/sign-up/email'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -57,6 +62,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInventoryIndexRoute = AppInventoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppInventoryRoute,
+} as any)
 const AppInventoryIdRoute = AppInventoryIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -67,24 +77,44 @@ const AppInventoryNewRoute = AppInventoryNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AppInventoryRoute,
 } as any)
-const AppInvoicesIdRoute = AppInvoicesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AppInvoicesRoute,
-} as any)
-const AppInventoryIndexRoute = AppInventoryIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppInventoryRoute,
-} as any)
 const AppInvoicesIndexRoute = AppInvoicesIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppInvoicesRoute,
 } as any)
+const AppInvoicesIdRoute = AppInvoicesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppInvoicesRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthGetSessionRoute = ApiAuthGetSessionRouteImport.update({
+  id: '/api/auth/get-session',
+  path: '/api/auth/get-session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthOkRoute = ApiAuthOkRouteImport.update({
+  id: '/api/auth/ok',
+  path: '/api/auth/ok',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignOutRoute = ApiAuthSignOutRouteImport.update({
+  id: '/api/auth/sign-out',
+  path: '/api/auth/sign-out',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignInEmailRoute = ApiAuthSignInEmailRouteImport.update({
+  id: '/api/auth/sign-in/email',
+  path: '/api/auth/sign-in/email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignUpEmailRoute = ApiAuthSignUpEmailRouteImport.update({
+  id: '/api/auth/sign-up/email',
+  path: '/api/auth/sign-up/email',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -99,18 +129,30 @@ export interface FileRoutesByFullPath {
   '/inventory/new': typeof AppInventoryNewRoute
   '/invoices/$id': typeof AppInvoicesIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/get-session': typeof ApiAuthGetSessionRoute
+  '/api/auth/ok': typeof ApiAuthOkRoute
+  '/api/auth/sign-out': typeof ApiAuthSignOutRoute
+  '/inventory/': typeof AppInventoryIndexRoute
+  '/invoices/': typeof AppInvoicesIndexRoute
+  '/api/auth/sign-in/email': typeof ApiAuthSignInEmailRoute
+  '/api/auth/sign-up/email': typeof ApiAuthSignUpEmailRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/billing': typeof AppBillingRoute
-  '/inventory': typeof AppInventoryRouteWithChildren
-  '/invoices': typeof AppInvoicesRouteWithChildren
   '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
   '/inventory/$id': typeof AppInventoryIdRoute
   '/inventory/new': typeof AppInventoryNewRoute
   '/invoices/$id': typeof AppInvoicesIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/get-session': typeof ApiAuthGetSessionRoute
+  '/api/auth/ok': typeof ApiAuthOkRoute
+  '/api/auth/sign-out': typeof ApiAuthSignOutRoute
+  '/inventory': typeof AppInventoryIndexRoute
+  '/invoices': typeof AppInvoicesIndexRoute
+  '/api/auth/sign-in/email': typeof ApiAuthSignInEmailRoute
+  '/api/auth/sign-up/email': typeof ApiAuthSignUpEmailRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,6 +167,13 @@ export interface FileRoutesById {
   '/_app/inventory/new': typeof AppInventoryNewRoute
   '/_app/invoices/$id': typeof AppInvoicesIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/get-session': typeof ApiAuthGetSessionRoute
+  '/api/auth/ok': typeof ApiAuthOkRoute
+  '/api/auth/sign-out': typeof ApiAuthSignOutRoute
+  '/_app/inventory/': typeof AppInventoryIndexRoute
+  '/_app/invoices/': typeof AppInvoicesIndexRoute
+  '/api/auth/sign-in/email': typeof ApiAuthSignInEmailRoute
+  '/api/auth/sign-up/email': typeof ApiAuthSignUpEmailRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -139,18 +188,30 @@ export interface FileRouteTypes {
     | '/inventory/new'
     | '/invoices/$id'
     | '/api/auth/$'
+    | '/api/auth/get-session'
+    | '/api/auth/ok'
+    | '/api/auth/sign-out'
+    | '/inventory/'
+    | '/invoices/'
+    | '/api/auth/sign-in/email'
+    | '/api/auth/sign-up/email'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/billing'
-    | '/inventory'
-    | '/invoices'
     | '/settings'
     | '/'
     | '/inventory/$id'
     | '/inventory/new'
     | '/invoices/$id'
     | '/api/auth/$'
+    | '/api/auth/get-session'
+    | '/api/auth/ok'
+    | '/api/auth/sign-out'
+    | '/inventory'
+    | '/invoices'
+    | '/api/auth/sign-in/email'
+    | '/api/auth/sign-up/email'
   id:
     | '__root__'
     | '/_app'
@@ -164,12 +225,24 @@ export interface FileRouteTypes {
     | '/_app/inventory/new'
     | '/_app/invoices/$id'
     | '/api/auth/$'
+    | '/api/auth/get-session'
+    | '/api/auth/ok'
+    | '/api/auth/sign-out'
+    | '/_app/inventory/'
+    | '/_app/invoices/'
+    | '/api/auth/sign-in/email'
+    | '/api/auth/sign-up/email'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiAuthGetSessionRoute: typeof ApiAuthGetSessionRoute
+  ApiAuthOkRoute: typeof ApiAuthOkRoute
+  ApiAuthSignOutRoute: typeof ApiAuthSignOutRoute
+  ApiAuthSignInEmailRoute: typeof ApiAuthSignInEmailRoute
+  ApiAuthSignUpEmailRoute: typeof ApiAuthSignUpEmailRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -265,19 +338,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/get-session': {
+      id: '/api/auth/get-session'
+      path: '/api/auth/get-session'
+      fullPath: '/api/auth/get-session'
+      preLoaderRoute: typeof ApiAuthGetSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/ok': {
+      id: '/api/auth/ok'
+      path: '/api/auth/ok'
+      fullPath: '/api/auth/ok'
+      preLoaderRoute: typeof ApiAuthOkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-out': {
+      id: '/api/auth/sign-out'
+      path: '/api/auth/sign-out'
+      fullPath: '/api/auth/sign-out'
+      preLoaderRoute: typeof ApiAuthSignOutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-in/email': {
+      id: '/api/auth/sign-in/email'
+      path: '/api/auth/sign-in/email'
+      fullPath: '/api/auth/sign-in/email'
+      preLoaderRoute: typeof ApiAuthSignInEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/sign-up/email': {
+      id: '/api/auth/sign-up/email'
+      path: '/api/auth/sign-up/email'
+      fullPath: '/api/auth/sign-up/email'
+      preLoaderRoute: typeof ApiAuthSignUpEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AppInventoryRouteChildren {
-  AppInventoryIndexRoute: typeof AppInventoryIndexRoute
   AppInventoryIdRoute: typeof AppInventoryIdRoute
   AppInventoryNewRoute: typeof AppInventoryNewRoute
+  AppInventoryIndexRoute: typeof AppInventoryIndexRoute
 }
 
 const AppInventoryRouteChildren: AppInventoryRouteChildren = {
-  AppInventoryIndexRoute: AppInventoryIndexRoute,
   AppInventoryIdRoute: AppInventoryIdRoute,
   AppInventoryNewRoute: AppInventoryNewRoute,
+  AppInventoryIndexRoute: AppInventoryIndexRoute,
 }
 
 const AppInventoryRouteWithChildren = AppInventoryRoute._addFileChildren(
@@ -285,13 +393,13 @@ const AppInventoryRouteWithChildren = AppInventoryRoute._addFileChildren(
 )
 
 interface AppInvoicesRouteChildren {
-  AppInvoicesIndexRoute: typeof AppInvoicesIndexRoute
   AppInvoicesIdRoute: typeof AppInvoicesIdRoute
+  AppInvoicesIndexRoute: typeof AppInvoicesIndexRoute
 }
 
 const AppInvoicesRouteChildren: AppInvoicesRouteChildren = {
-  AppInvoicesIndexRoute: AppInvoicesIndexRoute,
   AppInvoicesIdRoute: AppInvoicesIdRoute,
+  AppInvoicesIndexRoute: AppInvoicesIndexRoute,
 }
 
 const AppInvoicesRouteWithChildren = AppInvoicesRoute._addFileChildren(
@@ -320,6 +428,11 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiAuthGetSessionRoute: ApiAuthGetSessionRoute,
+  ApiAuthOkRoute: ApiAuthOkRoute,
+  ApiAuthSignOutRoute: ApiAuthSignOutRoute,
+  ApiAuthSignInEmailRoute: ApiAuthSignInEmailRoute,
+  ApiAuthSignUpEmailRoute: ApiAuthSignUpEmailRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
