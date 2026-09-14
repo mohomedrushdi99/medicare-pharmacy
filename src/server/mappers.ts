@@ -55,6 +55,7 @@ export type SaleRow = {
   payment_method: Sale["paymentMethod"];
   status: Sale["status"];
   notes: string;
+  customer_name?: string | null;
   created_at: string | Date;
   item_count?: number | string;
 };
@@ -73,6 +74,7 @@ export function mapSale(row: SaleRow, items?: SaleItem[]): Sale {
     paymentMethod: row.payment_method,
     status: row.status,
     notes: row.notes ?? "",
+    customerName: row.customer_name ?? "",
     itemCount: Number(row.item_count ?? items?.length ?? 0),
     createdAt: iso(row.created_at),
     items,

@@ -139,6 +139,13 @@ function InvoiceDetailPage() {
           </div>
         </header>
 
+        {sale.customerName?.trim() ? (
+          <div className="mt-5 rounded-lg border border-border bg-muted/40 px-4 py-3">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Customer</p>
+            <p className="mt-0.5 text-sm font-medium">{sale.customerName.trim()}</p>
+          </div>
+        ) : null}
+
         <div className="mt-6 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

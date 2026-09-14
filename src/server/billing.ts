@@ -38,6 +38,7 @@ const completeSaleSchema = z.object({
   amountPaid: moneyField("payment amount"),
   paymentMethod: z.enum(["cash", "card", "bank_transfer", "other"]),
   notes: z.string().max(400).optional(),
+  customerName: z.string().max(200).optional(),
 });
 
 export const getDashboard = createServerFn({ method: "GET" })
@@ -185,7 +186,7 @@ export const completeSale = createServerFn({ method: "POST" })
       const saleRows = await sql<SaleRow>`
         insert into sales (
           user_id, invoice_number, invoice_date, subtotal, discount, tax,
-          grand_total, amount_paid, balance, payment_method, status, notes
+          grand_total, amount_paid, balance, payment_method, status, notes, customer_name
         ) values (
           ${context.userId},
           ${invoiceNumber},
@@ -198,7 +199,8 @@ export const completeSale = createServerFn({ method: "POST" })
           ${centsToDecimalString(balanceCents)},
           ${data.paymentMethod},
           ${"completed"},
-          ${data.notes ?? ""}
+          ${data.notes ?? ""},
+          ${(data.customerName ?? "").trim()}
         ) returning *`;
       const saleId = Number(saleRows[0].id);
 
@@ -438,7 +440,28 @@ export const generateInvoicePdf = createServerFn({ method: "POST" })
       thickness: 1.2,
       color: rgb(accent.r, accent.g, accent.b),
     });
-    y -= 28;
+    y -= 22;
+
+    if (sale.customerName?.trim()) {
+      page.drawText("Customer", {
+        x: 48,
+        y,
+        size: 8,
+        font: sansBold,
+        color: muted,
+      });
+      y -= 12;
+      page.drawText(sale.customerName.trim().slice(0, 60), {
+        x: 48,
+        y,
+        size: 11,
+        font: sans,
+        color: ink,
+      });
+      y -= 18;
+    } else {
+      y -= 6;
+    }
 
     const cols = [
       { label: "No.", x: 48 },

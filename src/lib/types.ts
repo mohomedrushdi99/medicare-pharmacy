@@ -94,6 +94,7 @@ export type Sale = {
   paymentMethod: PaymentMethod;
   status: SaleStatus;
   notes: string;
+  customerName: string;
   itemCount: number;
   createdAt: string;
   items?: SaleItem[];

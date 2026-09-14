@@ -61,6 +61,7 @@ function BillingPage() {
   const [tax, setTax] = useState("0.00");
   const [paid, setPaid] = useState("");
   const [method, setMethod] = useState<PaymentMethod>("cash");
+  const [customerName, setCustomerName] = useState("");
   const [busy, setBusy] = useState(false);
 
   const selected = medicines.data?.find((m) => String(m.id) === selectedId);
@@ -182,6 +183,7 @@ function BillingPage() {
           tax: tax || "0",
           amountPaid: paid || "0",
           paymentMethod: method,
+          customerName: customerName.trim() || undefined,
         },
       });
       toast.success(`Invoice ${sale.invoiceNumber} completed`);
@@ -203,10 +205,21 @@ function BillingPage() {
         description={`${settings.pharmacyName} · ${formatDisplayDate(new Date())}`}
       />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm">
         <div>
           <p className="text-xs uppercase tracking-wide text-muted-foreground">Invoice no.</p>
           <p className="font-mono font-medium">{next.data?.invoiceNumber ?? "—"}</p>
+        </div>
+        <div className="min-w-[12rem] flex-1 space-y-1.5 sm:max-w-xs">
+          <Label htmlFor="customer-name">Customer name</Label>
+          <Input
+            id="customer-name"
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            placeholder="Enter customer name"
+            maxLength={200}
+            autoComplete="name"
+          />
         </div>
         <div className="text-right">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">Date</p>
