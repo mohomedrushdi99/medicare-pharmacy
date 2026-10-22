@@ -81,6 +81,15 @@ export type SaleItem = {
   lineTotalCents: number;
 };
 
+export type Customer = {
+  id: number;
+  name: string;
+  phone: string;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Sale = {
   id: number;
   invoiceNumber: string;
@@ -94,7 +103,10 @@ export type Sale = {
   paymentMethod: PaymentMethod;
   status: SaleStatus;
   notes: string;
+  customerId: number | null;
   customerName: string;
+  customerPhone: string;
+  customerAddress: string;
   itemCount: number;
   createdAt: string;
   items?: SaleItem[];

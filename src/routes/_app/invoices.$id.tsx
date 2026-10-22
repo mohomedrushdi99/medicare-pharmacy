@@ -139,10 +139,18 @@ function InvoiceDetailPage() {
           </div>
         </header>
 
-        {sale.customerName?.trim() ? (
+        {sale.customerName?.trim() || sale.customerPhone?.trim() || sale.customerAddress?.trim() ? (
           <div className="mt-5 rounded-lg border border-border bg-muted/40 px-4 py-3">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Customer</p>
-            <p className="mt-0.5 text-sm font-medium">{sale.customerName.trim()}</p>
+            {sale.customerName.trim() ? (
+              <p className="mt-0.5 text-sm font-medium">{sale.customerName.trim()}</p>
+            ) : null}
+            {sale.customerPhone.trim() ? (
+              <p className="mt-1 text-xs text-muted-foreground">{sale.customerPhone.trim()}</p>
+            ) : null}
+            {sale.customerAddress.trim() ? (
+              <p className="mt-1 text-xs text-muted-foreground">{sale.customerAddress.trim()}</p>
+            ) : null}
           </div>
         ) : null}
 

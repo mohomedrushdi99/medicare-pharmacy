@@ -13,6 +13,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppBillingRouteImport } from './routes/_app/billing'
+import { Route as AppCustomersRouteImport } from './routes/_app/customers'
 import { Route as AppInventoryRouteImport } from './routes/_app/inventory'
 import { Route as AppInvoicesRouteImport } from './routes/_app/invoices'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
@@ -45,6 +46,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppBillingRoute = AppBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCustomersRoute = AppCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInventoryRoute = AppInventoryRouteImport.update({
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/billing': typeof AppBillingRoute
+  '/customers': typeof AppCustomersRoute
   '/inventory': typeof AppInventoryRouteWithChildren
   '/invoices': typeof AppInvoicesRouteWithChildren
   '/settings': typeof AppSettingsRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/billing': typeof AppBillingRoute
+  '/customers': typeof AppCustomersRoute
   '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
   '/inventory/$id': typeof AppInventoryIdRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/billing': typeof AppBillingRoute
+  '/_app/customers': typeof AppCustomersRoute
   '/_app/inventory': typeof AppInventoryRouteWithChildren
   '/_app/invoices': typeof AppInvoicesRouteWithChildren
   '/_app/settings': typeof AppSettingsRoute
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/billing'
+    | '/customers'
     | '/inventory'
     | '/invoices'
     | '/settings'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/billing'
+    | '/customers'
     | '/settings'
     | '/'
     | '/inventory/$id'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/_app/billing'
+    | '/_app/customers'
     | '/_app/inventory'
     | '/_app/invoices'
     | '/_app/settings'
@@ -273,6 +285,13 @@ declare module '@tanstack/react-router' {
       path: '/billing'
       fullPath: '/billing'
       preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/customers': {
+      id: '/_app/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof AppCustomersRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/inventory': {
@@ -408,6 +427,7 @@ const AppInvoicesRouteWithChildren = AppInvoicesRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppBillingRoute: typeof AppBillingRoute
+  AppCustomersRoute: typeof AppCustomersRoute
   AppInventoryRoute: typeof AppInventoryRouteWithChildren
   AppInvoicesRoute: typeof AppInvoicesRouteWithChildren
   AppSettingsRoute: typeof AppSettingsRoute
@@ -416,6 +436,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppBillingRoute: AppBillingRoute,
+  AppCustomersRoute: AppCustomersRoute,
   AppInventoryRoute: AppInventoryRouteWithChildren,
   AppInvoicesRoute: AppInvoicesRouteWithChildren,
   AppSettingsRoute: AppSettingsRoute,
