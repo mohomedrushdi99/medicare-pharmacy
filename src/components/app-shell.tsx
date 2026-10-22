@@ -6,6 +6,7 @@ import {
   Package,
   Receipt,
   Settings,
+  Users,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { UserButton } from "@/lib/auth/gates";
@@ -20,6 +21,7 @@ const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/inventory", label: "Inventory", icon: Package },
   { to: "/billing", label: "Billing", icon: Receipt },
+  { to: "/customers", label: "Customers", icon: Users },
   { to: "/invoices", label: "Invoices", icon: FileText },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;

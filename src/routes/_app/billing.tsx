@@ -19,6 +19,7 @@ import { formatDisplayDate } from "@/lib/format";
 import { centsToDecimalString, formatCents, parseMoneyToCents } from "@/lib/money";
 import { PAYMENT_METHODS, type Medicine, type PaymentMethod } from "@/lib/types";
 import { completeSale, previewNextInvoice } from "@/server/billing";
+import { listCustomers } from "@/server/customers";
 import { listActiveMedicines } from "@/server/inventory";
 
 export const Route = createFileRoute("/_app/billing")({
@@ -48,6 +49,10 @@ function BillingPage() {
     queryKey: ["next-invoice"],
     queryFn: () => previewNextInvoice(),
   });
+  const customers = useQuery({
+    queryKey: ["customers"],
+    queryFn: () => listCustomers(),
+  });
 
   const [selectedId, setSelectedId] = useState<string>("");
   const [qty, setQty] = useState("1");
@@ -61,7 +66,10 @@ function BillingPage() {
   const [tax, setTax] = useState("0.00");
   const [paid, setPaid] = useState("");
   const [method, setMethod] = useState<PaymentMethod>("cash");
+  const [customerId, setCustomerId] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
   const [busy, setBusy] = useState(false);
 
   const selected = medicines.data?.find((m) => String(m.id) === selectedId);
@@ -79,6 +87,22 @@ function BillingPage() {
     if (settings.defaultTaxPercent > 0) {
       /* tax is recomputed from lines below */
     }
+  }
+
+  function chooseCustomer(id: string) {
+    setCustomerId(id === "walk-in" ? "" : id);
+    const customer = customers.data?.find((entry) => String(entry.id) === id);
+    setCustomerName(customer?.name ?? "");
+    setCustomerPhone(customer?.phone ?? "");
+    setCustomerAddress(customer?.address ?? "");
+  }
+
+  function editCustomerField(
+    setValue: (value: string) => void,
+    value: string,
+  ) {
+    setCustomerId("");
+    setValue(value);
   }
 
   function addItem() {
@@ -183,7 +207,10 @@ function BillingPage() {
           tax: tax || "0",
           amountPaid: paid || "0",
           paymentMethod: method,
+          customerId: customerId ? Number(customerId) : undefined,
           customerName: customerName.trim() || undefined,
+          customerPhone: customerPhone.trim() || undefined,
+          customerAddress: customerAddress.trim() || undefined,
         },
       });
       toast.success(`Invoice ${sale.invoiceNumber} completed`);
@@ -210,16 +237,56 @@ function BillingPage() {
           <p className="text-xs uppercase tracking-wide text-muted-foreground">Invoice no.</p>
           <p className="font-mono font-medium">{next.data?.invoiceNumber ?? "—"}</p>
         </div>
-        <div className="min-w-[12rem] flex-1 space-y-1.5 sm:max-w-xs">
-          <Label htmlFor="customer-name">Customer name</Label>
-          <Input
-            id="customer-name"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            placeholder="Enter customer name"
-            maxLength={200}
-            autoComplete="name"
-          />
+        <div className="grid min-w-[16rem] flex-1 gap-3 sm:max-w-xl sm:grid-cols-2">
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>Saved customer</Label>
+            <Select value={customerId || "walk-in"} onValueChange={chooseCustomer}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a customer (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="walk-in">Walk-in / enter manually</SelectItem>
+                {(customers.data ?? []).map((customer) => (
+                  <SelectItem key={customer.id} value={String(customer.id)}>
+                    {customer.name}{customer.phone ? ` · ${customer.phone}` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="customer-name">Customer name</Label>
+            <Input
+              id="customer-name"
+              value={customerName}
+              onChange={(e) => editCustomerField(setCustomerName, e.target.value)}
+              placeholder="Enter customer name"
+              maxLength={200}
+              autoComplete="name"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="customer-phone">Phone</Label>
+            <Input
+              id="customer-phone"
+              value={customerPhone}
+              onChange={(e) => editCustomerField(setCustomerPhone, e.target.value)}
+              placeholder="Enter phone number"
+              maxLength={40}
+              autoComplete="tel"
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor="customer-address">Address</Label>
+            <Input
+              id="customer-address"
+              value={customerAddress}
+              onChange={(e) => editCustomerField(setCustomerAddress, e.target.value)}
+              placeholder="Enter address"
+              maxLength={500}
+              autoComplete="street-address"
+            />
+          </div>
         </div>
         <div className="text-right">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">Date</p>

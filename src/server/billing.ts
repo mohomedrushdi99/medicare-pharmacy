@@ -38,7 +38,10 @@ const completeSaleSchema = z.object({
   amountPaid: moneyField("payment amount"),
   paymentMethod: z.enum(["cash", "card", "bank_transfer", "other"]),
   notes: z.string().max(400).optional(),
+  customerId: z.number().int().positive().optional(),
   customerName: z.string().max(200).optional(),
+  customerPhone: z.string().max(40).optional(),
+  customerAddress: z.string().max(500).optional(),
 });
 
 export const getDashboard = createServerFn({ method: "GET" })
@@ -133,6 +136,23 @@ export const completeSale = createServerFn({ method: "POST" })
       if (!settingsRows[0]) throw new Error("Unable to complete the invoice.");
       const settings = mapSettings(settingsRows[0]);
 
+      const customerRows = data.customerId
+        ? await sql<{
+            id: number;
+            name: string;
+            phone: string;
+            address: string;
+          }>`
+            select id, name, phone, address from customers
+            where id = ${data.customerId} and user_id = ${context.userId}
+            limit 1`
+        : [];
+      if (data.customerId && !customerRows[0]) throw new Error("Customer not found.");
+      const customer = customerRows[0];
+      const customerName = customer?.name ?? (data.customerName ?? "").trim();
+      const customerPhone = customer?.phone ?? (data.customerPhone ?? "").trim();
+      const customerAddress = customer?.address ?? (data.customerAddress ?? "").trim();
+
       const computedItems: {
         medicine: ReturnType<typeof mapMedicine>;
         quantity: number;
@@ -186,7 +206,8 @@ export const completeSale = createServerFn({ method: "POST" })
       const saleRows = await sql<SaleRow>`
         insert into sales (
           user_id, invoice_number, invoice_date, subtotal, discount, tax,
-          grand_total, amount_paid, balance, payment_method, status, notes, customer_name
+          grand_total, amount_paid, balance, payment_method, status, notes,
+          customer_id, customer_name, customer_phone, customer_address
         ) values (
           ${context.userId},
           ${invoiceNumber},
@@ -200,7 +221,10 @@ export const completeSale = createServerFn({ method: "POST" })
           ${data.paymentMethod},
           ${"completed"},
           ${data.notes ?? ""},
-          ${(data.customerName ?? "").trim()}
+          ${customer?.id ?? null},
+          ${customerName},
+          ${customerPhone},
+          ${customerAddress}
         ) returning *`;
       const saleId = Number(saleRows[0].id);
 
@@ -280,7 +304,8 @@ export const listInvoices = createServerFn({ method: "GET" })
        ) si on si.sale_id = s.id
        where s.user_id = $1
          and s.invoice_date between $2::date and $3::date
-         and ($4 = '' or s.invoice_number ilike $5 or s.payment_method ilike $5)
+         and ($4 = '' or s.invoice_number ilike $5 or s.payment_method ilike $5
+              or s.customer_name ilike $5 or s.customer_phone ilike $5)
        order by s.created_at desc
        limit $6 offset $7`,
       [context.userId, from, to, search, like, pageSize, offset],
@@ -442,7 +467,37 @@ export const generateInvoicePdf = createServerFn({ method: "POST" })
     });
     y -= 22;
 
-    if (sale.customerName?.trim()) {
+    const customerDetails = [
+      sale.customerName?.trim(),
+      sale.customerPhone?.trim(),
+      sale.customerAddress?.trim(),
+    ].filter(Boolean);
+    const wrapCustomerDetail = (detail: string, maxCharacters: number) => {
+      const lines: string[] = [];
+      let current = "";
+      for (const word of detail.split(/\s+/)) {
+        let remaining = word;
+        while (remaining.length > maxCharacters) {
+          if (current) {
+            lines.push(current);
+            current = "";
+          }
+          lines.push(remaining.slice(0, maxCharacters));
+          remaining = remaining.slice(maxCharacters);
+        }
+        if (!remaining) continue;
+        const candidate = current ? `${current} ${remaining}` : remaining;
+        if (candidate.length > maxCharacters && current) {
+          lines.push(current);
+          current = remaining;
+        } else {
+          current = candidate;
+        }
+      }
+      if (current) lines.push(current);
+      return lines;
+    };
+    if (customerDetails.length) {
       page.drawText("Customer", {
         x: 48,
         y,
@@ -450,15 +505,21 @@ export const generateInvoicePdf = createServerFn({ method: "POST" })
         font: sansBold,
         color: muted,
       });
-      y -= 12;
-      page.drawText(sale.customerName.trim().slice(0, 60), {
-        x: 48,
-        y,
-        size: 11,
-        font: sans,
-        color: ink,
-      });
-      y -= 18;
+      y -= 14;
+      for (const [index, detail] of customerDetails.entries()) {
+        const name = index === 0;
+        for (const detailLine of wrapCustomerDetail(detail, name ? 70 : 100)) {
+          page.drawText(detailLine, {
+            x: 48,
+            y,
+            size: name ? 11 : 8,
+            font: sans,
+            color: name ? ink : muted,
+          });
+          y -= name ? 16 : 12;
+        }
+      }
+      y -= 4;
     } else {
       y -= 6;
     }
@@ -513,7 +574,11 @@ export const generateInvoicePdf = createServerFn({ method: "POST" })
       }
     };
 
-    y = drawTableHeader(page, y);
+    if (y < 200) {
+      startContinuationPage(true);
+    } else {
+      y = drawTableHeader(page, y);
+    }
 
     sale.items?.forEach((item, index) => {
       if (y < 160) startContinuationPage(true);
