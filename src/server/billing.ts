@@ -350,7 +350,7 @@ export const generateInvoicePdf = createServerFn({ method: "POST" })
     const sale = mapSale(sales[0], items.map(mapSaleItem));
     const symbol = settings.currencySymbol;
     const pdf = await PDFDocument.create();
-    const page = pdf.addPage([595.28, 841.89]);
+    let page = pdf.addPage([595.28, 841.89]);
     const serif = await pdf.embedFont(StandardFonts.TimesRomanBold);
     const serifReg = await pdf.embedFont(StandardFonts.TimesRoman);
     const sans = await pdf.embedFont(StandardFonts.Helvetica);
@@ -471,20 +471,52 @@ export const generateInvoicePdf = createServerFn({ method: "POST" })
       { label: "Unit Price", x: 348 },
       { label: "Total", x: 455 },
     ];
-    page.drawRectangle({
-      x: 48,
-      y: y - 6,
-      width: width - 96,
-      height: 20,
-      color: rgb(0.94, 0.96, 0.95),
-    });
-    for (const col of cols) {
-      page.drawText(col.label, { x: col.x, y, size: 8, font: sansBold, color: muted });
-    }
-    y -= 22;
+    const drawTableHeader = (targetPage: typeof page, headerY: number) => {
+      targetPage.drawRectangle({
+        x: 48,
+        y: headerY - 6,
+        width: width - 96,
+        height: 20,
+        color: rgb(0.94, 0.96, 0.95),
+      });
+      for (const col of cols) {
+        targetPage.drawText(col.label, {
+          x: col.x,
+          y: headerY,
+          size: 8,
+          font: sansBold,
+          color: muted,
+        });
+      }
+      return headerY - 22;
+    };
+    const startContinuationPage = (withTableHeader: boolean) => {
+      page = pdf.addPage([width, height]);
+      page.drawText("INVOICE (continued)", {
+        x: 48,
+        y: height - 48,
+        size: 14,
+        font: sansBold,
+        color: ink,
+      });
+      page.drawText(sale.invoiceNumber, {
+        x: 48,
+        y: height - 66,
+        size: 9,
+        font: sans,
+        color: muted,
+      });
+      if (withTableHeader) {
+        y = drawTableHeader(page, height - 96);
+      } else {
+        y = height - 96;
+      }
+    };
+
+    y = drawTableHeader(page, y);
 
     sale.items?.forEach((item, index) => {
-      if (y < 160) return;
+      if (y < 160) startContinuationPage(true);
       page.drawText(String(index + 1), { x: 48, y, size: 9, font: sans, color: ink });
       page.drawText(item.medicineName.slice(0, 36), { x: 76, y, size: 9, font: sans, color: ink });
       page.drawText(String(item.quantity), { x: 268, y, size: 9, font: sans, color: ink });
@@ -513,6 +545,9 @@ export const generateInvoicePdf = createServerFn({ method: "POST" })
         color: line,
       });
     });
+
+    const summaryHeight = 6 * 14 + 10 + 8 + 12 + (settings.taxVatNumber ? 12 : 0);
+    if (y - summaryHeight < 110) startContinuationPage(false);
 
     y -= 10;
     const summary = [
